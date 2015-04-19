@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Chessboard analysis</title>
+	<link rel="stylesheet" href="css/chessboard.css" />
+	<link rel="stylesheet" href="css/main.css" />
+	<script src="js/json3.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/sockjs/0.3.4/sockjs.min.js"></script>
+	<script src="js/jquery-1.10.1.min.js"></script>
+	<script src="js/chessboard.js"></script>
+	<!-- Legal moves http://chessboardjs.com/examples#5000 -->
+    <script type="text/javascript">
+		var board;
+
+		function connect() {
+			var websocket = new SockJS("/chatroomServerEndpoint");
+			websocket.onmessage = function (message) {
+				var jsonData = JSON.parse(message.data);
+				board.position(jsonData.fen);
+			}
+			var onChange = function(oldPos, newPos) {
+				var newFen = ChessBoard.objToFen(newPos);
+				websocket.send(newFen);
+			}
+
+			var cfg = {
+				draggable: true,
+				position: 'start',
+				onChange: onChange
+			};
+
+			board = new ChessBoard('board', cfg);
+		}
+		function reset() {
+			board.position('start');
+		}
+    </script>
+</head>
+<body>
+<div id="board" style="width: 400px"></div>
+<button onclick="reset()" style="margin-top: 5px">Reset position</button>
+<button id="connect" onclick="connect();">Connect</button>
+<div id="chat">
+</div>
+</body>
+</html>
